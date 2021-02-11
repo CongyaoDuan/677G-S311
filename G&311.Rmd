@@ -1,0 +1,90 @@
+---
+title: "G&S3-11"
+author: "Congyao Duan"
+date: "2021/2/10"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+pacman::p_load(knitr, ggplot2)
+```
+
+
+
+## Background
+
+Suppose that ordinary aspirin has been found effective against headaches 60 percent of the time, and that a drug company claims that its new aspirin with a special headache additive is more effective. We can test this claim as follows: $H_0 = 0.6$, $H_1 > 0.6$.  
+We give the aspirin to n people to take when they have a headache. We want to find a number m, called the critical value for our experiment, such that we reject $H_0$ if at least m people are cured, and otherwise we accept it. There are t types of error.  
+
+- Type 1 error:  
+$$P = \alpha(p) = \sum_{m \leq k \leq n}b(n, p, k)\ \ =\ Type\ 1\ error$$
+We want to choose m so as to make $\alpha(p)$ small, to reduce the likelihood of a type 1 error.  
+
+
+- Type 2 error: 
+$$P = 1 - \alpha(p) = 1 - \sum_{m \leq k \leq n}b(n,p, k)\ \ =\ \beta(p)$$
+We want to choose m so as to make $\beta(p)$ small, to reduce the likelihood of a type 2 error.  
+
+## Figure 3.7
+
+In Figure 3.7, the author set n = 100, plot the $\alpha(p)$ for p ranging from 0.4 to 1. The left line is when m = 69 and right line is when m = 73.  
+
+```{r}
+PowerCurve <- function(p,m){
+  sum <- 0
+  for (i in m:100) sum = sum + dbinom(i, 100, p)
+  return(sum)
+}
+
+x <- seq(.4, 1, .005)
+y1 <- PowerCurve(x, 69)
+y2 <- PowerCurve(x, 73)
+
+ggplot() + 
+  geom_line(mapping = aes(x = x, y = y1)) + 
+  geom_line(mapping = aes(x = x, y = y2)) + 
+  scale_x_continuous(limits = c(.4, 1), breaks = seq(.4, 1, .1), minor_breaks = NULL) + 
+  scale_y_continuous(limits = c(0, 1), breaks = seq(0, 1, .1), minor_breaks = NULL) + 
+  xlab("p") + 
+  ylab("alpha(p)") + 
+  geom_segment(aes(x = 0.6, y = 0.95, xend = 0.8, yend = 0.95)) + 
+  geom_segment(aes(x = 0.6, y = 0.05, xend = 0.8, yend = 0.05)) + 
+  geom_segment(aes(x = 0.6, y = 0.05, xend = 0.6, yend = 0.95)) + 
+  geom_segment(aes(x = 0.8, y = 0.05, xend = 0.8, yend = 0.95))
+```
+
+## Critical value 
+
+We want $\alpha_{0.6}(m) < 0.05$ and $\beta_{0.8}(m) = 1- \alpha_{0.8}(m) < 0.05$.  
+
+We now print the value of $\alpha_{0.6}(m)$.  
+
+```{r, echo = FALSE}
+a = seq(1,16)
+for (i in 60:75) a[i-59] = PowerCurve(0.6, i)
+df = data.frame(m = 60:75, 'alpha0.6(m)' = a)
+df
+```
+
+The cutpoint is 69. So $m >= 69$ satisfy $\alpha_{0.6}(m) < 0.05$.  
+
+- If we need $\alpha_{0.8}(m) > 0.95$, we now print the value of $\alpha_{0.8}(m)$.  
+
+```{r, echo = FALSE}
+a = seq(1,15)
+for (i in 65:79) a[i-64] = PowerCurve(0.8, i)
+df = data.frame(m = 65:79, 'alpha0.8(m)' = a)
+df
+```
+
+The cutpoint is 73. So, we need $m < =73$ to satisfy $\alpha_{0.8}(m) > 0.95$.  
+
+So $$69<=m<=73$$.
+
+
+
+
+
